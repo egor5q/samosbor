@@ -33,7 +33,11 @@ locs = {
     
 @bot.message_handler(commands=['move'])
 def moveeee(m):
-    pass
+    user = users.find_one({'id':m.from_user.id})
+    unit = user['units'][user['current_unit']]
+    kb = types.InlineKeyboardMarkup()
+    for ids in locs[unit['location']]['nearlocs']:
+        kb.add(types.InlineKeyboardButton(text = locs[ids]['name'], callback_data = 'move?'+str(locs[ids]['id'])))
     
 
 def medit(message_text,chat_id, message_id,reply_markup=None,parse_mode=None):
