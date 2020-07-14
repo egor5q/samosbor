@@ -19,7 +19,22 @@ users=db.users
 codes = db.codes
 if codes.find_one({}) == None:
     codes.insert_one({'code':0})
+    
+locs = {
+    'testloc1':{
+        'name':'Тест1',
+        'id':-10035294,
+        'items':{},
+        'nearlocs':[]
+    }
 
+}
+
+    
+@bot.message_handler(commands=['move'])
+def moveeee(m):
+    pass
+    
 
 def medit(message_text,chat_id, message_id,reply_markup=None,parse_mode=None):
     return bot.edit_message_text(chat_id=chat_id,message_id=message_id,text=message_text,reply_markup=reply_markup,
