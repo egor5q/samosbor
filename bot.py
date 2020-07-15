@@ -9,7 +9,7 @@ from telebot import types
 from pymongo import MongoClient
 import traceback
 
-token = os.environ['TELEGRAM_TOKEN']
+token = os.environ['samosbor']
 bot = telebot.TeleBot(token)
 
 
@@ -17,27 +17,55 @@ client=MongoClient(os.environ['database'])
 db=client.samosbor
 users=db.users
 codes = db.codes
+locs = db.locs
 if codes.find_one({}) == None:
     codes.insert_one({'code':0})
+
+if locs.find_one({}) == None:
+    locs.insert_one({'locs':{}})
     
-locs = {
-    'testloc1':{
-        'name':'Тест1',
-        'id':-10035294,
+def createloc(name, id, nearlocs, cod):
+    return {
+        'name':name,
+        'id':id,
         'items':{},
-        'nearlocs':[]
+        'nearlocs':nearlocs,
+        'players':{},
+        'code':cod
     }
+        
+    
+locss = {
+    'testloc1':createloc(name = 'Тест1', id = -1001477215496, nearlocs = ['testloc2'], cod = 'testloc1'),
+    
+    'testloc2':createloc(name = 'Тест2', id = -1001187807260, nearlocs = ['testloc1', 'testloc3'], cod = 'testloc2'),
+    
+    'testloc3':createloc(name = 'Тест3', id = -1001264719525, nearlocs = ['testloc2'], cod = 'testloc3')
+
 
 }
 
+x = locs.find_one({})
+
+for ids in locss:
+    if ids not in x['locs']:
+        locs.update_one({},{'$set':{'locs.'+ids:locss[ids])}})
+        try:
+            bot.send_message(441399484, 'Новая локация добавлена:\n\n'+str(locss[ids]))
+        except:
+            pass
+
+def findloc(chat):
+    loc = None
+    for ids in locs:
+        if locs[ids]['id'] == chat.id:
+            loc = locs[ids]
+    return loc
     
-@bot.message_handler(commands=['move'])
-def moveeee(m):
-    user = users.find_one({'id':m.from_user.id})
-    unit = user['units'][user['current_unit']]
-    kb = types.InlineKeyboardMarkup()
-    for ids in locs[unit['location']]['nearlocs']:
-        kb.add(types.InlineKeyboardButton(text = locs[ids]['name'], callback_data = 'move?'+str(locs[ids]['id'])))
+@bot.message_handler(content_types = ['new_chat_members'])
+def newbie(m):
+    loc = findloc(m.chat)
+    if m.from_user.id not in 
     
 
 def medit(message_text,chat_id, message_id,reply_markup=None,parse_mode=None):
